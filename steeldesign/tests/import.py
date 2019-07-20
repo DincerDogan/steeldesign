@@ -40,6 +40,8 @@ with open('ub.csv') as f:
 
         ubs.append(UBSection(code=as4100, name=name, d=d, bf=bf, tf=tf, tw=tw,
                              r=r, grade=grade, props=props))
-#
+
 for ub in ubs:
-    print('{0}:\t{1:0.1f}'.format(ub.name, ub.full_restraint_length_simple(beta_m=-.8)))
+    print('{0}:\t{1:0.1f}\t{2:0.1f}'.format(
+        ub.name, ub.full_restraint_length_simple(beta_m=-.8),
+        ub.full_restraint_length(alpha_m=1.13)))

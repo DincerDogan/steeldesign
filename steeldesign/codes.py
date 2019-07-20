@@ -6,6 +6,8 @@ class DesignCode:
 
         self.name = 'AS4100-1998'
         self.phi_member = 0.9
+        self.elastic_modulus = 200e3
+        self.shear_modulus = 80e3
 
     def plate_slenderness_bending(self, plate_type, res_stress):
         """Returns the plate slenderness limits for bending given a plate type
@@ -96,3 +98,19 @@ class SteelGrade:
             return 480
         elif self.grade == '3679.1-300':
             return 440
+
+
+class Restraint:
+    """a"""
+
+    def __init__(self, rtype, pos):
+        """Inits the Restraint class.
+
+        :param string rtype: Restraint type (**F**ixed, **P**artial,
+            **R**otational, **L**ateral)
+        :param float pos: Relative length along member at which the restraint
+            is applied *(0 <= pos <= 1)*
+        """
+
+        self.rtype = rtype
+        self.pos = pos

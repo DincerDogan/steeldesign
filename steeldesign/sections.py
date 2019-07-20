@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import optimize
 
 
 class SteelSection:
@@ -84,6 +85,29 @@ class SteelSection:
 
         return self.code.phi_member * self.get_yield_stress() * self.calc_ze(
             axis='y') / 1e6
+
+    def calc_phi_mbx(self, le, alpha_m=1):
+        """a
+        """
+
+        # get section capacity
+        msx = self.calc_phi_msx() / self.code.phi_member
+
+        # get reference buckling moment
+        m0 = self.calc_m0(le)
+
+        # calculate alpha_s
+        alpha_s = 0.6 * (np.sqrt((msx / m0) ** 2 + 3) - msx / m0)
+
+        return self.code.phi_member * alpha_m * alpha_s * msx
+
+    def full_restraint_length(self, alpha_m):
+        """a"""
+
+        def f(x):
+            return self.calc_phi_mbx(x, alpha_m) - self.calc_phi_msx()
+
+        return optimize.root_scalar(f, x0=500, x1=2000).root
 
 
 class UBSection(SteelSection):
@@ -240,3 +264,18 @@ class UBSection(SteelSection):
 
         return self.ry * (80 + 50 * beta_m) * np.sqrt(
             250 / self.get_yield_stress())
+
+    def calc_m0(self, le):
+        """Returns the reference buckling moment, M0, for a UB section.
+
+        :param float le: Effective length of the segment under consideration
+        :returns: Reference buckling moment [kN.m]
+        :rtype: float
+        """
+
+        e = self.code.elastic_modulus
+        g = self.code.shear_modulus
+
+        return 1e-6 * np.sqrt(
+            ((np.pi ** 2 * e * self.iyy) / (le ** 2)) * (
+                g * self.j + (np.pi ** 2 * e * self.iw / (le ** 2))))
