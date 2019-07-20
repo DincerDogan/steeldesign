@@ -11,6 +11,8 @@ class DesignCode:
         """Returns the plate slenderness limits for bending given a plate type
         and a residual stress class.
 
+        T.5.2 AS4100-1998
+
         :param string plate_type: Type of plate - 'Uniform1', 'Bending1',
             'Uniform2', 'Bending2', 'CHS'
         :param string res_stress: Residual stress class - 'SR', 'HR', 'LW,
@@ -59,3 +61,38 @@ class DesignCode:
         }
 
         return slender_dict[plate_type][res_stress]
+
+
+class SteelGrade:
+    """a"""
+
+    def __init__(self, grade):
+        """a"""
+
+        self.grade = grade
+
+    def get_yield_stress(self, t):
+        """a"""
+
+        if self.grade == '3679.1-350':
+            if t <= 11:
+                return 360
+            elif t < 40:
+                return 340
+            elif t >= 40:
+                return 330
+        elif self.grade == '3679.1-300':
+            if t < 11:
+                return 320
+            elif t <= 17:
+                return 300
+            elif t >= 17:
+                return 280
+
+    def get_tensile_strength(self):
+        """a"""
+
+        if self.grade == '3679.1-350':
+            return 480
+        elif self.grade == '3679.1-300':
+            return 440

@@ -1,8 +1,9 @@
 import csv
-from steeldesign.codes import DesignCode
+from steeldesign.codes import DesignCode, SteelGrade
 from steeldesign.sections import UBSection
 
 as4100 = DesignCode()
+grade = SteelGrade('3679.1-300')
 ubs = []
 
 with open('ub.csv') as f:
@@ -33,18 +34,12 @@ with open('ub.csv') as f:
         ry = float(row[17])
         j = float(row[18])
         iw = float(row[19])
-        fyf = float(row[20])
-        fyw = float(row[21])
         kf = float(row[22])
 
         props = [area, None, ixx, zxx, sxx, rx, iyy, zyy, syy, ry, j, iw, kf]
 
         ubs.append(UBSection(code=as4100, name=name, d=d, bf=bf, tf=tf, tw=tw,
-                             r=r, fyf=fyf, fyw=fyw, props=props))
-
+                             r=r, grade=grade, props=props))
+#
 for ub in ubs:
-    print('{0}:\t{1:0.1f}'.format(ub.name, ub.calc_phi_msx()))
-
-for ub in ubs:
-    compact, _, _, plate = ub.bending_compact_x()
-    print('{0}:\t{1}\t{2}'.format(ub.name, compact, plate))
+    print('{0}:\t{1:0.1f}'.format(ub.name, ub.full_restraint_length_simple(beta_m=-.8)))

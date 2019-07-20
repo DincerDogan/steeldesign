@@ -33,7 +33,10 @@ class SteelSection:
         pass
 
     def calc_ze(self, axis):
-        """a"""
+        """a
+
+        Cl. 5.2.3, Cl. 5.2.4, Cl. 5.2.5 AS4100-1998
+        """
 
         if axis == 'x':
             z = self.zxx
@@ -73,7 +76,14 @@ class SteelSection:
     def calc_phi_msx(self):
         """a"""
 
-        return self.code.phi_member * self.calc_msx()
+        return self.code.phi_member * self.get_yield_stress() * self.calc_ze(
+            axis='x') / 1e6
+
+    def calc_phi_msy(self):
+        """a"""
+
+        return self.code.phi_member * self.get_yield_stress() * self.calc_ze(
+            axis='y') / 1e6
 
 
 class UBSection(SteelSection):
@@ -85,14 +95,13 @@ class UBSection(SteelSection):
     :param float tf: Flange thickness of the UB section [mm]
     :param float tw: Web thickness of the UB section [mm]
     :param float r: Root radius of the UB section [mm]
-    :param float fyf: Flange yield strength of the UB section [MPa]
-    :param float fyw: Web yield strength of the UB section [MPa]
+    :param grade: Steel grade
+    :type grade: :class:`~steeldesign.codes.SteelGrade`
     :param props: List of section properties to import
     :type props: list[float]
     """
 
-    def __init__(self, code, name, d, bf, tf, tw, r, fyf, fyw,
-                 props=[None] * 13):
+    def __init__(self, code, name, d, bf, tf, tw, r, grade, props=[None] * 13):
         """Inits the UBSection class."""
 
         super().__init__(code, props)
@@ -103,8 +112,11 @@ class UBSection(SteelSection):
         self.tf = tf
         self.tw = tw
         self.r = r
-        self.fyf = fyf
-        self.fyw = fyw
+        self.grade = grade
+
+        # calculate yield stresses
+        self.fyf = self.grade.get_yield_stress(self.tf)
+        self.fyw = self.grade.get_yield_stress(self.tw)
 
     def calc_dw(self):
         """Returns the depth of the web (d - 2 * tf).
@@ -133,29 +145,16 @@ class UBSection(SteelSection):
 
         return (self.bf - self.tw) / (2 * self.tf)
 
-    def calc_msx(self):
-        """Returns the unfactored section moment capacity about the x-axis
-        [kN.m]
+    def get_yield_stress(self):
+        """Returns the yield stress of the section
 
-        Ms = min(fyf, fyw) * Zex
+        fy = min(fyf, fyw)
 
-        :returns: Unfactored section moment capacity about the x-axis
+        :returns: Yield stress of the section
         :rtype: float
         """
 
-        return min(self.fyf, self.fyw) * self.calc_ze(axis='x') / 1e6
-
-    def calc_msy(self):
-        """Returns the unfactored section moment capacity about the y-axis
-        [kN.m]
-
-        Ms = min(fyf, fyw) * Zey
-
-        :returns: Unfactored section moment capacity about the y-axis
-        :rtype: float
-        """
-
-        return min(self.fyf, self.fyw) * self.calc_ze(axis='y') / 1e6
+        return min(self.fyf, self.fyw)
 
     def bending_compact_x(self):
         """Returns the compactness of the section for bending about the x-axis.
@@ -195,3 +194,49 @@ class UBSection(SteelSection):
             compact = 'S'
 
         return(compact, lambda_s, lambda_lims, plate_type)
+
+    def bending_compact_y(self):
+        """Returns the compactness of the section for bending about the y-axis.
+
+        :returns: Compactness of the section for bending about the y-axis
+            *('C', 'NC', 'S'), section slenderness, slenderness limits and the
+            plate type
+        :rtype: tuple(string, float, tuple(float, float, float), string)
+        """
+
+        # flange slenderness
+        lambda_s = self.calc_flange_slenderness() * np.sqrt(self.fyf / 250)
+        lambda_lims = self.code.plate_slenderness_bending('Bending1', 'HR')
+        plate_type = 'Bending1'
+
+        # compactness
+        if lambda_s < lambda_lims[0]:
+            compact = 'C'
+        elif lambda_s < lambda_lims[1]:
+            compact = 'NC'
+        else:
+            compact = 'S'
+
+        return(compact, lambda_s, lambda_lims, plate_type)
+
+    def full_restraint_length_simple(self, beta_m=-1):
+        """Returns the maximum segment length for which the section is
+        considered fully laterally restrained as defined by Cl. 5.3.2.4
+        AS4100-1998.
+
+        :param float beta_m: Factor dependent on the bending moments within the
+            segment
+        :returns: Maximum segment length for which the section is considered
+            fully laterally restrained
+        :rtype: float
+
+        The ratio beta_m shall be taken as one of the following as appropriate:
+        * -1;
+        * -0.8 for segments with transverse loads; or
+        * the ratio of the smaller to the larger end moments in the length (l),
+        (positive when the segment is bent in reverse curvature and negative
+        when bent in single curvature) for segments without transverse loads.
+        """
+
+        return self.ry * (80 + 50 * beta_m) * np.sqrt(
+            250 / self.get_yield_stress())
