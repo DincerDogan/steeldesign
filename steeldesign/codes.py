@@ -107,7 +107,7 @@ class Restraint:
         """Inits the Restraint class.
 
         :param string rtype: Restraint type (**F**ixed, **P**artial,
-            **R**otational, **L**ateral)
+            **R**otational, **L**ateral, '**U**nrestrained')
         :param float pos: Relative length along member at which the restraint
             is applied *(0 <= pos <= 1)*
         """
