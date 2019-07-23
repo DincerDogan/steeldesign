@@ -42,14 +42,12 @@ class SteelSection:
         if axis == 'x':
             z = self.zxx
             s = self.sxx
-            (compact_x, lambda_s,
-             lambda_lims, plate_type) = self.bending_compact_x()
+            (compact_x, lambda_s, lambda_lims, plate_type) = self.bending_compact_x()
 
         elif axis == 'y':
             z = self.zyy
             s = self.syy
-            (compact_x, lambda_s,
-             lambda_lims, plate_type) = self.bending_compact_y()
+            (compact_x, lambda_s, lambda_lims, plate_type) = self.bending_compact_y()
 
         if compact_x == 'C':
             return min(1.5 * z, s)
@@ -59,8 +57,7 @@ class SteelSection:
             lambda_sy = lambda_lims[1]
             lambda_sp = lambda_lims[0]
 
-            return z + (zc - z) * (lambda_sy - lambda_s) / (
-                lambda_sy - lambda_sp)
+            return z + (zc - z) * (lambda_sy - lambda_s) / (lambda_sy - lambda_sp)
 
         elif compact_x == 'S':
             if plate_type in ['Uniform1', 'Uniform2']:
@@ -142,6 +139,33 @@ class UBSection(SteelSection):
         self.fyf = self.grade.get_yield_stress(self.tf)
         self.fyw = self.grade.get_yield_stress(self.tw)
 
+    def get_tf(self):
+        """Returns the thickness of the flange.
+
+        :returns: Flange thickness
+        :rtype: float
+        """
+
+        return self.tf
+
+    def get_tw(self):
+        """Returns the thickness of the web.
+
+        :returns: Web thickness
+        :rtype: float
+        """
+
+        return self.tw
+
+    def get_nw(self):
+        """Returns the number of webs.
+
+        :returns: Number of webs
+        :rtype: int
+        """
+
+        return 1
+
     def calc_dw(self):
         """Returns the depth of the web (d - 2 * tf).
 
@@ -183,9 +207,8 @@ class UBSection(SteelSection):
     def bending_compact_x(self):
         """Returns the compactness of the section for bending about the x-axis.
 
-        :returns: Compactness of the section for bending about the x-axis
-            *('C', 'NC', 'S'), section slenderness, slenderness limits and the
-            plate type
+        :returns: Compactness of the section for bending about the x-axis *('C', 'NC', 'S'),
+            section slenderness, slenderness limits and the plate type
         :rtype: tuple(string, float, tuple(float, float, float), string)
         """
 
@@ -222,9 +245,8 @@ class UBSection(SteelSection):
     def bending_compact_y(self):
         """Returns the compactness of the section for bending about the y-axis.
 
-        :returns: Compactness of the section for bending about the y-axis
-            *('C', 'NC', 'S'), section slenderness, slenderness limits and the
-            plate type
+        :returns: Compactness of the section for bending about the y-axis *('C', 'NC', 'S'),
+            section slenderness, slenderness limits and the plate type
         :rtype: tuple(string, float, tuple(float, float, float), string)
         """
 
@@ -244,26 +266,23 @@ class UBSection(SteelSection):
         return(compact, lambda_s, lambda_lims, plate_type)
 
     def full_restraint_length_simple(self, beta_m=-1):
-        """Returns the maximum segment length for which the section is
-        considered fully laterally restrained as defined by Cl. 5.3.2.4
-        AS4100-1998.
+        """Returns the maximum segment length for which the section is considered fully laterally
+        restrained as defined by Cl. 5.3.2.4 AS4100-1998.
 
-        :param float beta_m: Factor dependent on the bending moments within the
-            segment
-        :returns: Maximum segment length for which the section is considered
-            fully laterally restrained
+        :param float beta_m: Factor dependent on the bending moments within the segment
+        :returns: Maximum segment length for which the section is considered fully laterally
+            restrained
         :rtype: float
 
         The ratio beta_m shall be taken as one of the following as appropriate:
         * -1;
         * -0.8 for segments with transverse loads; or
-        * the ratio of the smaller to the larger end moments in the length (l),
-        (positive when the segment is bent in reverse curvature and negative
-        when bent in single curvature) for segments without transverse loads.
+        * the ratio of the smaller to the larger end moments in the length (l), (positive when the
+          segment is bent in reverse curvature and negative when bent in single curvature) for
+          segments without transverse loads.
         """
 
-        return self.ry * (80 + 50 * beta_m) * np.sqrt(
-            250 / self.get_yield_stress())
+        return self.ry * (80 + 50 * beta_m) * np.sqrt(250 / self.get_yield_stress())
 
     def calc_m0(self, le):
         """Returns the reference buckling moment, M0, for a UB section.
@@ -276,6 +295,6 @@ class UBSection(SteelSection):
         e = self.code.elastic_modulus
         g = self.code.shear_modulus
 
-        return 1e-6 * np.sqrt(
-            ((np.pi ** 2 * e * self.iyy) / (le ** 2)) * (
-                g * self.j + (np.pi ** 2 * e * self.iw / (le ** 2))))
+        return 1e-6 * np.sqrt(((np.pi ** 2 * e * self.iyy) / (le ** 2)) * (
+            g * self.j + (np.pi ** 2 * e * self.iw / (le ** 2)))
+        )

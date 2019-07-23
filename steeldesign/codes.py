@@ -10,17 +10,16 @@ class DesignCode:
         self.shear_modulus = 80e3
 
     def plate_slenderness_bending(self, plate_type, res_stress):
-        """Returns the plate slenderness limits for bending given a plate type
-        and a residual stress class.
+        """Returns the plate slenderness limits for bending given a plate type and a residual
+        stress class.
 
         T.5.2 AS4100-1998
 
-        :param string plate_type: Type of plate - 'Uniform1', 'Bending1',
-            'Uniform2', 'Bending2', 'CHS'
-        :param string res_stress: Residual stress class - 'SR', 'HR', 'LW,
-            'CF', 'HW'
-        :returns: Plate slenderness limits for bending *(plasticity limit,
-            yield limit, deformation limit)*
+        :param string plate_type: Type of plate - 'Uniform1', 'Bending1', 'Uniform2', 'Bending2',
+            'CHS'
+        :param string res_stress: Residual stress class - 'SR', 'HR', 'LW, 'CF', 'HW'
+        :returns: Plate slenderness limits for bending *(plasticity limit, yield limit, deformation
+            limit)*
         :rtype: tuple(float, float, float)
         """
 
@@ -106,10 +105,10 @@ class Restraint:
     def __init__(self, rtype, pos):
         """Inits the Restraint class.
 
-        :param string rtype: Restraint type (**F**ixed, **P**artial,
-            **R**otational, **L**ateral, '**U**nrestrained')
-        :param float pos: Relative length along member at which the restraint
-            is applied *(0 <= pos <= 1)*
+        :param string rtype: Restraint type (**F**ixed, **P**artial, **R**otational, **L**ateral,
+            '**U**nrestrained')
+        :param float pos: Relative length along member at which the restraint is applied
+            *(0 <= pos <= 1)*
         """
 
         self.rtype = rtype

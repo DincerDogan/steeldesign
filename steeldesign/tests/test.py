@@ -27,14 +27,15 @@ kf = 1
 
 props = [area, None, ixx, zxx, sxx, rx, iyy, zyy, syy, ry, j, iw, kf]
 
-section = UBSection(code=as4100, name=name, d=d, bf=bf, tf=tf, tw=tw,
-                    r=r, grade=grade, props=props)
+section = UBSection(code=as4100, name=name, d=d, bf=bf, tf=tf, tw=tw, r=r, grade=grade,
+                    props=props)
 
 end1 = Restraint('F', 0)
-mid = Restraint('L', 0.6)
+mid1 = Restraint('L', 0.4)
+mid2 = Restraint('L', 0.7)
 end2 = Restraint('F', 1)
 
-member = Member(section=section, length=5000, restraints=[end1, mid, end2])
+member = Member(section=section, length=12000, restraints=[end1, mid1, mid2, end2])
 
 bmd = np.array([[0,	0],
                 [0.05, 9.5],
@@ -56,6 +57,9 @@ bmd = np.array([[0,	0],
                 [0.85, 25.5],
                 [0.9, 18],
                 [0.95, 9.5],
-                [1,	0]])
+                [1,	0]]
+               )
 
-member.calc_phi_mbx(bmd=bmd)
+print(member.calc_phi_mbx(bmd=bmd, load_position=['ES', 'ES', 'ES']))
+print(member.calc_phi_mbx(bmd=bmd, load_position=['ES', 'ES', 'ES'], alpha_m=[1, 1, 1]))
+print(section.calc_phi_msx())
