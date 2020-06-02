@@ -3,7 +3,7 @@ from setuptools import setup
 
 
 def description_text():
-    return 'Structural steel design to AS4100-1998.'
+    return 'Structural steel design to AS 4100-1998.'
 
 
 def readme():
